@@ -3,7 +3,8 @@
 A professional, portable network diagnostics tool for Windows. 
 Features: Hardware-Vault, Dual-Stack Check, and ISP Diagnostics.
 
-<video src="https://github.com/SNDT-Tools/SNDT--Global-Release-Edition/raw/main/demo.mp4" autoplay loop muted playsinline width="100%"></video>
+<video src="https://github.com/SNDT-Tools/SNDT--Global-Release-Edition/blob/main/demo.mp4?raw=true" controls width="100%"></video>
+
 
 ## 🚀 Key Features
 * **Hardware Vault:** Anonymous SHA-256 MAC hashing.
