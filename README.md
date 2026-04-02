@@ -1,9 +1,9 @@
-# SNDT - Global Release Edition
-
+[Timeline 2](https://github.com/user-attachments/assets/d73ee13a-b0b8-435e-8f59-60b77846364f)
+# SNDT - Global Release Edition!
 A professional, portable network diagnostics tool for Windows. 
 Features: Hardware-Vault, Dual-Stack Check, and ISP Diagnostics.
 
-<video src="https://github.com/SNDT-Tools/SNDT--Global-Release-Edition/blob/main/demo.mp4?raw=true" controls width="100%"></video>
+
 
 
 ## 🚀 Key Features
