@@ -17,3 +17,10 @@ Features: Hardware-Vault, Dual-Stack Check, and ISP Diagnostics.
 #
 
 > 🚀 **SNEAK PEEK:** Work on the **SNDT GUI-Edition** is in full swing! A release with a complete Graphical User Interface is just around the corner. Stay tuned!
+
+#
+https://github.com/user-attachments/assets/364e5362-31ad-48c0-99f5-de5c55815994
+
+
+
+
