@@ -9,3 +9,7 @@ Features: Hardware-Vault, Dual-Stack Check, and ISP Diagnostics.
 * **Dual-Stack Intelligence:** Compares IPv4 and IPv6.
 * **Wi-Fi Topology:** Detects Main Routers vs. Repeaters.
 * **Pro-Scoring:** Strict 3-level rating (Excellent, Fair, Poor).
+
+#
+
+> 🚀 **SNEAK PEEK:** Work on the **SNDT GUI-Edition** is in full swing! A release with a complete Graphical User Interface is just around the corner. Stay tuned!
