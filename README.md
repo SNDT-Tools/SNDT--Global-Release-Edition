@@ -1,10 +1,8 @@
-[Timeline 2](https://github.com/user-attachments/assets/d73ee13a-b0b8-435e-8f59-60b77846364f)
+<img src="https://github.com/user-attachments/assets/d73ee13a-b0b8-435e-8f59-60b77846364f" width="100%">
+
 # SNDT - Global Release Edition!
-A professional, portable network diagnostics tool for Windows. 
+A professional, portable network diagnostics tool for Windows.
 Features: Hardware-Vault, Dual-Stack Check, and ISP Diagnostics.
-
-
-
 
 ## 🚀 Key Features
 * **Hardware Vault:** Anonymous SHA-256 MAC hashing.
