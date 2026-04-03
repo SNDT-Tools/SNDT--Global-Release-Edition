@@ -1,7 +1,10 @@
 <img src="https://github.com/user-attachments/assets/d73ee13a-b0b8-435e-8f59-60b77846364f" width="100%"> 
 
-# 🚀 SNDT - Global Release Edition
+<p align="center">
 
+  # 🚀 SNDT - Global Release Edition
+  
+</p>
 <p align="center">
   <b>Sinn Network Diagnostics Tool</b><br>
   Real-Time Network Diagnostics with Hardware-Level Insights
@@ -21,8 +24,6 @@
 > **A portable, real-time network diagnostics tool with deep hardware awareness and modern UI visualization.**
 
 SNDT combines a high-performance PowerShell diagnostic engine with a custom-built Electron frontend, enabling real-time analysis of network behavior.
-
-Unlike typical speedtest tools, SNDT is designed to explain why your connection behaves the way it does.
 
 ---
 
@@ -54,9 +55,18 @@ Unlike typical speedtest tools, SNDT is designed to explain why your connection 
 
 ---
 
-## 🖥️ GUI Preview
+<p align="center"> 
 
+## 🖥️ GUI Preview
+  
+</p>
+
+<p align="center">
+  
 <img width="773" height="474" src="https://github.com/user-attachments/assets/c7ec1970-54b9-46df-bab3-f35728808765" />
+<img width="1044" height="646" alt="image" src="https://github.com/user-attachments/assets/2f3a7598-5de6-494e-84d1-f18805d0b48e" />
+
+</p>
 
 ---
 
@@ -71,7 +81,15 @@ Unlike typical speedtest tools, SNDT is designed to explain why your connection 
 - Dynamic UI scaling  
 
 ---
+## 🧠 Architecture
 
+Electron Frontend  
+⇅ (JSON IPC)  
+PowerShell Engine  
+⇅  
+Windows Network Stack  
+
+---
 ## 💾 Installation & Usage
 
 1. Download from Releases  
@@ -80,7 +98,16 @@ Unlike typical speedtest tools, SNDT is designed to explain why your connection 
 4. Diagnose  
 
 ---
+## 🧪 Example Diagnosis
 
+| Scenario | Interpretation |
+|--------|--------------|
+| High ping + low gateway latency | ISP issue |
+| High gateway latency | Wi-Fi / Router problem |
+| High jitter | unstable connection |
+| Packet loss | network instability or congestion |
+
+---
 ## 🛠️ Build from Source
 
 Requirements:
