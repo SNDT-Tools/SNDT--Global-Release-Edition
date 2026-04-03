@@ -47,3 +47,28 @@ SNDT is designed to leave no trace on your system. No registry keys, no messy in
 ### 🔮 Sneak Peek: What's coming in v1.1.5?
 
 * 👁️ **Streamer Mode (Privacy Toggle):** We are currently working on a dedicated "Eye" icon right next to your IP addresses. With a single click, you will be able to **toggle your public IP visibility on or off** (censoring it instantly). This will make it **100% safe to share screenshots or live streams** of your dashboard with the world without leaking your private data!
+
+#
+
+## 🛠️ How to Build / Run from Source
+
+To comply with open-source standards, you can easily build and run SNDT directly from the source code. The frontend runs on Electron, while the backend relies on native Windows PowerShell capabilities.
+
+**Prerequisites:**
+* [Node.js](https://nodejs.org/) installed on your machine.
+* Windows 10 or 11 (required for native PowerShell network module execution).
+
+**1. Clone the repository:**
+`git clone https://github.com/SNDT-Tools/SNDT--Global-Release-Edition.git`
+
+**2. Navigate to the GUI folder:**
+`cd SNDT--Global-Release-Edition/NNDT/NNDT-GUI`
+
+**3. Install dependencies:**
+`npm install`
+
+**4. Run the app (Development Mode):**
+`npm start`
+
+**5. Build the portable executable yourself:**
+`npm run build`
