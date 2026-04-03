@@ -4,6 +4,7 @@
 ![OS](https://img.shields.io/badge/OS-Windows_10_%7C_11-blue?style=for-the-badge&logo=windows)
 ![License](https://img.shields.io/github/license/SNDT-Tools/SNDT--Global-Release-Edition?style=for-the-badge)
 ![Release](https://img.shields.io/github/v/release/SNDT-Tools/SNDT--Global-Release-Edition?include_prereleases&style=for-the-badge)
+![GitHub Downloads](https://img.shields.io/github/downloads/SNDT-Tools/SNDT--Global-Release-Edition/total?style=for-the-badge&color=ff4b00)
 
 A professional, portable network diagnostics tool for Windows.
 Features: Hardware-Vault, Dual-Stack Check, and ISP Diagnostics.
