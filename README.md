@@ -55,6 +55,7 @@ SNDT is designed to leave no trace on your system. No registry keys, no messy in
 To comply with open-source standards, you can easily build and run SNDT directly from the source code. The frontend runs on Electron, while the backend relies on native Windows PowerShell capabilities.
 
 **Prerequisites:**
+* [Git](https://git-scm.com/) installed on your machine.
 * [Node.js](https://nodejs.org/) installed on your machine.
 * Windows 10 or 11 (required for native PowerShell network module execution).
 
