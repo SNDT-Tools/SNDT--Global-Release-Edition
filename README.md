@@ -1,63 +1,94 @@
-<img src="https://github.com/user-attachments/assets/d73ee13a-b0b8-435e-8f59-60b77846364f" width="100%">
+<img src="https://github.com/user-attachments/assets/d73ee13a-b0b8-435e-8f59-60b77846364f" width="100%"> 
 
-# SNDT - Global Release Edition!
+# 🚀 SNDT - Global Release Edition
 
-![OS](https://img.shields.io/badge/OS-Windows_10_%7C_11-blue?style=for-the-badge&logo=windows)
-![License](https://img.shields.io/github/license/SNDT-Tools/SNDT--Global-Release-Edition?style=for-the-badge)
-![Release](https://img.shields.io/github/v/release/SNDT-Tools/SNDT--Global-Release-Edition?include_prereleases&style=for-the-badge)
-![GitHub Downloads](https://img.shields.io/github/downloads/SNDT-Tools/SNDT--Global-Release-Edition/total?style=for-the-badge&color=ff4b00)
+<p align="center">
+  <b>Sinn Network Diagnostics Tool</b><br>
+  Real-Time Network Diagnostics with Hardware-Level Insights
+</p>
 
-> **A professional, hardware-accelerated, and completely portable network diagnostics tool for Windows.** > Built for system administrators, competitive gamers, and power users to troubleshoot routing, latency, and bufferbloat issues in real-time.
-
----
-
-## 🚀 The GUI Evolution (v1.1.0)
-SNDT has evolved from a pure CLI script into a **fully interactive, custom-built Graphical User Interface (GUI)**. We built a sleek, modern dashboard that processes complex diagnostic data in real-time, transforming raw network metrics into visually intuitive, instantly actionable insights.
-
-<img width="773" height="474" alt="Screenshot 2026-04-02 131533" src="https://github.com/user-attachments/assets/c7ec1970-54b9-46df-bab3-f35728808765" />
-
-### ✨ Key Features
-* 🖥️ **Custom Electron Frontend:** A frameless, premium dark-themed aesthetic with custom window controls and ultra-smooth UI transitions.
-* 🌀 **Real-Time Visual Feedback:** Dynamic UI animations and state-driven "Phase" morphing. The central UI core changes shape, color, and rotation speed depending on active network load and test progress.
-* ⚙️ **Frictionless Setup Flow:** The required Ookla Speedtest CLI download and EULA agreement are seamlessly integrated directly into the application UI. 
-* 🔍 **Precision UI Scaling:** A dedicated precision slider allows you to dynamically adjust the interface zoom factor for perfect readability on 1080p, 1440p, and 4K ultra-wide monitors.
-* 🗂️ **Categorized Results:** Post-test results are cleanly organized into dedicated tabs (**Overview**, **DNS Benchmark**, and **Traceroute**) to eliminate information overload.
-* 💯 **Comprehensive Grading System:** Your network receives an immediate, color-coded letter grade (**A to F**), strictly calculated based on core latency, jitter variance, packet loss, and bufferbloat spikes.
+<p align="center">
+  <img src="https://img.shields.io/badge/OS-Windows_10_|_11-blue?style=for-the-badge&logo=windows">
+  <img src="https://img.shields.io/github/license/SNDT-Tools/SNDT--Global-Release-Edition?style=for-the-badge">
+  <img src="https://img.shields.io/github/v/release/SNDT-Tools/SNDT--Global-Release-Edition?include_prereleases&style=for-the-badge">
+  <img src="https://img.shields.io/github/downloads/SNDT-Tools/SNDT--Global-Release-Edition/total?style=for-the-badge&color=ff4b00">
+</p>
 
 ---
 
-## 🔄 Under the Hood
-* 🧠 **Advanced Architecture:** The original PowerShell script acts as a silent, invisible "motor" deep in the background, communicating blazingly fast with the Electron frontend via structured JSON parsing and bidirectional IPC streams.
-* ⚡ **Ping Engine Rewrite:** Powered by the native `.NET System.Net.NetworkInformation.Ping` class for lightning-fast, highly precise, and resource-efficient latency measurements.
-* 🔒 **Hardware Vault:** Anonymous SHA-256 MAC hashing protects your hardware identity.
+## 📖 Overview
+
+> **A portable, real-time network diagnostics tool with deep hardware awareness and modern UI visualization.**
+
+SNDT combines a high-performance PowerShell diagnostic engine with a custom-built Electron frontend, enabling real-time analysis of network behavior.
+
+Unlike typical speedtest tools, SNDT is designed to explain why your connection behaves the way it does.
+
+---
+
+## ✨ What Makes SNDT Different
+
+### 🧠 Hardware-Aware Network Analysis
+- OUI-Based Repeater Detection  
+- Gateway Type Classification  
+- Hardware Profiling  
+
+### 📡 True Latency Separation
+- Local Gateway Latency → Wi-Fi / Router  
+- External Latency → ISP / Internet  
+
+### 🔒 Privacy by Design
+- Data blurred by default  
+- Manual reveal toggle  
+- SHA-256 hardware hash vault  
+
+### ⚡ Real-Time Diagnostic Engine
+- Native .NET Ping backend  
+- Asynchronous execution  
+- JSON IPC communication  
+
+### 🎨 Advanced UI System
+- Frameless Electron UI  
+- Dynamic border states  
+- Core morphing system  
+
+---
+
+## 🖥️ GUI Preview
+
+<img width="773" height="474" src="https://github.com/user-attachments/assets/c7ec1970-54b9-46df-bab3-f35728808765" />
+
+---
+
+## 🛠️ Core Features
+
+- Latency, jitter, packet loss analysis  
+- IPv4 / IPv6 detection  
+- Repeater detection  
+- Integrated Speedtest setup  
+- Local vs WAN diagnostics  
+- Network grading system  
+- Dynamic UI scaling  
 
 ---
 
 ## 💾 Installation & Usage
 
-SNDT is designed to leave no trace on your system. No registry keys, no messy installers.
-
-1. Download the latest `SNDT v1.1.0 -Global Release Edition.zip` from the **[Releases](../../releases)** page.
-2. Extract the .zip file
-3. Run the executable **"SNDT v1.1.0 -Global Release Edition.exe"**.
-3. **Diagnose.**
+1. Download from Releases  
+2. Extract  
+3. Run the .exe  
+4. Diagnose  
 
 ---
 
-### 🔮 Sneak Peek: What's coming in v1.1.5?
+## 🛠️ Build from Source
 
-* 👁️ **Streamer Mode (Privacy Toggle):** We are currently working on a dedicated "Eye" icon right next to your IP addresses. With a single click, you will be able to **toggle your public IP visibility on or off** (censoring it instantly). This will make it **100% safe to share screenshots or live streams** of your dashboard with the world without leaking your private data!
-
-#
-
-## 🛠️ How to Build / Run from Source
-
-To comply with open-source standards, you can easily build and run SNDT directly from the source code. The frontend runs on Electron, while the backend relies on native Windows PowerShell capabilities.
-
-**Prerequisites:**
+Requirements:
 * [Git](https://git-scm.com/) installed on your machine.
 * [Node.js](https://nodejs.org/) installed on your machine.
 * Windows 10 or 11 (required for native PowerShell network module execution).
+
+Setup:
 
 **1. Clone the repository:**
 `git clone https://github.com/SNDT-Tools/SNDT--Global-Release-Edition.git`
@@ -73,3 +104,21 @@ To comply with open-source standards, you can easily build and run SNDT directly
 
 **5. Build the portable executable yourself:**
 `npm run build`
+
+
+---
+
+
+## 📌 Notes
+
+- Fully portable  
+- Runs locally  
+- No cloud dependency  
+
+---
+
+## 🔮 Future Direction
+
+- Routing diagnostics  
+- ISP analysis  
+- Protocol insights  
