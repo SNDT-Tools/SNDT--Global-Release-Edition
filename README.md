@@ -14,6 +14,8 @@
 ## 🚀 The GUI Evolution (v1.1.0)
 SNDT has evolved from a pure CLI script into a **fully interactive, custom-built Graphical User Interface (GUI)**. We built a sleek, modern dashboard that processes complex diagnostic data in real-time, transforming raw network metrics into visually intuitive, instantly actionable insights.
 
+<img width="773" height="474" alt="Screenshot 2026-04-02 131533" src="https://github.com/user-attachments/assets/c7ec1970-54b9-46df-bab3-f35728808765" />
+
 ### ✨ Key Features
 * 🖥️ **Custom Electron Frontend:** A frameless, premium dark-themed aesthetic with custom window controls and ultra-smooth UI transitions.
 * 🌀 **Real-Time Visual Feedback:** Dynamic UI animations and state-driven "Phase" morphing. The central UI core changes shape, color, and rotation speed depending on active network load and test progress.
@@ -36,7 +38,8 @@ SNDT has evolved from a pure CLI script into a **fully interactive, custom-built
 SNDT is designed to leave no trace on your system. No registry keys, no messy installers.
 
 1. Download the latest `SNDT v1.1.0 -Global Release Edition.zip` from the **[Releases](../../releases)** page.
-2. Run the executable.
+2. Extract the .zip file
+3. Run the executable **"SNDT v1.1.0 -Global Release Edition.exe"**.
 3. **Diagnose.**
 
 ---
