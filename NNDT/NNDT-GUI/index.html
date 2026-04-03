@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>SNDT - Global Release Edition</title>
+    <style>
+        :root { --bg-color: rgb(35, 35, 35); --accent-color: rgb(255, 75, 0); }
+        body { 
+            margin: 0; background-color: transparent !important; display: flex; 
+            justify-content: center; align-items: center; height: 100vh; 
+            font-family: 'Consolas', monospace; overflow: hidden; color: #fff; 
+        }
+        .window-shell {
+            position: relative;
+            width: 1050px; height: 650px;
+            /* margin left/right top/bottom is automatically 25px since body is flex center and window is 1100x700 */
+        }
+        .window-frame { 
+            width: 100%; height: 100%; 
+            background-color: var(--bg-color); border-radius: 6px;
+            display: flex; flex-direction: column; position: relative; 
+            z-index: 10; overflow: hidden;
+            box-shadow: 0 0 15px rgba(0,0,0,0.8);
+        }
+
+        /* ---------------------------------------------------------------- */
+        /* THE DYNAMIC BORDER ENGINE                                        */
+        /* ---------------------------------------------------------------- */
+        .window-shell::before {
+            content: ''; position: absolute; z-index: 1; 
+            border-radius: 7px; transition: all 1.5s ease-in-out; 
+            top: 0; left: 0; right: 0; bottom: 0; pointer-events: none;
+        }
+        .window-shell.state-1::before {
+            top: -1px; left: -1px; right: -1px; bottom: -1px;
+            background: linear-gradient(90deg, #111, #333, #0a0a0a, #333, #111);
+            background-size: 200% 100%; animation: flowSeamless 6s linear infinite;
+            box-shadow: 0 0 10px rgba(255,255,255,0.02);
+        }
+        .window-shell.state-2::before {
+            top: -2px; left: -2px; right: -2px; bottom: -2px; 
+            background: linear-gradient(90deg, #ff4b00, #330e00, #ff4b00, #330e00, #ff4b00);
+            background-size: 200% 100%; animation: flowSeamless 2.5s linear infinite; 
+            box-shadow: 0 0 20px rgba(255, 75, 0, 0.4); 
+        }
+        .window-shell.state-3::before {
+            top: -3px; left: -3px; right: -3px; bottom: -3px;
+            background: linear-gradient(90deg, #ff0000, #ff8c00, #cc0000, #ff5500, #ff0000, #ff8c00, #cc0000, #ff5500, #ff0000);
+            background-size: 200% 100%; animation: flowSeamless 1s linear infinite; 
+            box-shadow: 0 0 10px rgba(255,0,0,0.7), 0 0 20px rgba(255,75,0,0.5);
+        }
+        .window-shell.state-4::before {
+            top: -1px; left: -1px; right: -1px; bottom: -1px;
+            background: linear-gradient(90deg, #1a0a00, #401000, #111111, #401000, #1a0a00);
+            background-size: 200% 100%; animation: flowSeamless 8s linear infinite; 
+            box-shadow: 0 0 10px rgba(255, 50, 0, 0.1);
+        }
+        @keyframes flowSeamless { 0% { background-position: 0% 0; } 100% { background-position: -200% 0; } }
+
+        .spark {
+            position: absolute; width: 2px; height: 6px; background: #fff; border-radius: 2px;
+            box-shadow: 0 0 10px #ff4b00, 0 0 5px #ffcc00; z-index: 5; pointer-events: none;
+            animation: flySpark 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+        @keyframes flySpark {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--flyX), var(--flyY)) scale(0.5); opacity: 0; }
+        }
+        
+        /* Holographic Hypercube (Mini) */
+        .loader-13 { position: relative; width: 24px; height: 24px; transform-style: preserve-3d; perspective: 150px; display:flex; justify-content:center; align-items:center;}
+        .loader-13 > div { position: absolute; border: 1px solid var(--accent-color); opacity: 0.8; animation: cubeSpin 4s infinite linear; box-shadow: inset 0 0 5px rgba(255,75,0,0.3); }
+        .l13-1 { width: 24px; height: 24px; }
+        .l13-2 { width: 16px; height: 16px; animation-direction: reverse !important; animation-duration: 2.5s !important; border-color: rgba(255,75,0,0.6); }
+        .l13-3 { width: 8px; height: 8px; animation-duration: 1.5s !important; border-color: rgba(255,75,0,1); background: rgba(255,75,0,0.2); }
+        @keyframes cubeSpin { 0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); } 100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); } }
+
+        
+        /* Title Bar */
+        .title-bar { 
+            height: 35px; background-color: #1a1a1a; display: flex; 
+            justify-content: space-between; align-items: center; 
+            padding: 0 10px; border-bottom: 1px solid #333; 
+            -webkit-app-region: drag; z-index: 9999;
+            border-top-left-radius: 6px; border-top-right-radius: 6px;
+        }
+        .title-text { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 2px;}
+        .window-controls { display: flex; -webkit-app-region: no-drag; }
+        .control-btn { 
+            width: 45px; height: 35px; border-radius: 0; cursor: pointer; 
+            border: none; background-color: transparent; color: #888; 
+            display: flex; justify-content: center; align-items: center; font-size: 12px; 
+        }
+        .control-btn:hover { background-color: #333; color: #fff; }
+        .close-btn:hover { background-color: #ff2a2a; color: #fff; }
+
+        /* Splash Screen (Start Screen) */
+        #splash-screen {
+            position: absolute; top: 35px; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at center, rgb(25,25,25) 0%, rgb(10,10,10) 100%);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000; transition: opacity 0.5s ease; -webkit-app-region: no-drag;
+            border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;
+            overflow: hidden; /* Prevent logo watermark from escaping the frame */
+        }
+        .splash-logo {
+            font-size: 140px; font-weight: 900; color: #fff;
+            text-shadow: 0 0 30px rgba(255, 75, 0, 0.4); margin-bottom: 0; line-height: 1;
+        }
+        .splash-sub {
+            color: var(--accent-color); font-size: 18px; letter-spacing: 12px; margin-bottom: 80px;
+        }
+        .splash-btn {
+            background: transparent; border: 2px solid var(--accent-color);
+            color: var(--accent-color); padding: 15px 60px; font-size: 16px;
+            text-transform: uppercase; letter-spacing: 4px; cursor: pointer; transition: 0.3s;
+        }
+        .splash-btn:hover { background: var(--accent-color); color: #000; box-shadow: 0 0 30px rgba(255,75,0,0.5); }
+
+        /* Main structure */
+        .main-content { display: flex; flex: 1; height: calc(100% - 35px); }
+        
+        /* Navigation Sidebar */
+        .sidebar { 
+            width: 250px; background-color: #1e1e1e; border-right: 1px solid #333; 
+            display: flex; flex-direction: column; padding: 20px 0; overflow-y: auto; overflow-x: hidden;
+            -webkit-app-region: no-drag; z-index: 5;
+            border-bottom-left-radius: 6px;
+        }
+        .sidebar-title { padding: 0 20px; color: var(--accent-color); font-size: 14px; font-weight: bold; margin: 20px 0 5px 0; text-transform: uppercase; letter-spacing: 2px;}
+        .sidebar-title:first-child { margin-top: 5px; }
+        .nav-item { padding: 12px 20px; color: #888; font-size: 13px; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent;}
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-item.active { color: #fff; background: rgba(255, 75, 0, 0.1); border-left: 3px solid var(--accent-color); }
+        
+        /* Dashboard Container */
+        .dash-h { 
+            flex: 1; padding: 50px; display: flex; flex-direction: column; 
+            background: var(--bg-color); position: relative; overflow: hidden; 
+            -webkit-app-region: no-drag;
+            border-bottom-right-radius: 6px;
+        }
+        
+        /* We zoom this inner container with the slider */
+        .dash-inner {
+            flex: 1; display: flex; flex-direction: column; transform-origin: top left;
+            overflow-y: auto; overflow-x: hidden; padding-right: 10px;
+        }
+
+        .target-display { font-size: 14px; color: #666; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;}
+        .target-display span { color: var(--accent-color); }
+
+        .huge-bg { 
+            position: absolute; bottom: -20px; right: -20px; font-size: 180px; 
+            font-weight: 900; color: rgba(255,255,255,0.02); line-height: 0.8; 
+            letter-spacing: -5px; z-index: 0; user-select: none; pointer-events: none;
+        }
+
+        /* Metrics Mode */
+        .dash-metrics { display: none; z-index: 1; margin-top: 15px;}
+        .metric-h { margin-bottom: 40px; }
+        .m-title { font-size: 12px; color: #888; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; }
+        .m-value { font-size: 50px; color: var(--accent-color); font-weight: 300; line-height: 1; }
+        .m-value span { color: #fff; font-weight: bold; }
+        
+        /* Info Mode (Grid System) */
+        .dash-info { display: block; z-index: 1; }
+        .info-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+        }
+        .info-card {
+            background: rgba(20, 20, 20, 0.4);
+            border: 1px solid #333;
+            border-top: 2px solid var(--accent-color);
+            padding: 10px 15px;
+            display: flex; flex-direction: column;
+            backdrop-filter: blur(5px);
+        }
+        .info-card.wide { grid-column: span 2; }
+        .info-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+        .info-value { font-size: 15px; color: #fff; font-weight: 300; letter-spacing: 1px; }
+        .info-value span { color: var(--accent-color); font-weight: bold;}
+        
+        .blurred-ip {
+            filter: blur(5px);
+            opacity: 0.3;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+        .blurred-ip.revealed {
+            filter: blur(0px);
+            opacity: 1;
+            user-select: text;
+        }
+        .eye-toggle {
+            cursor: pointer;
+            color: #888;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        .eye-toggle:hover {
+            color: #fff;
+            transform: scale(1.1);
+        }
+
+        /* Settings Mode */
+        .dash-settings { display: none; z-index: 1; }
+        .settings-card { border: 1px solid #333; padding: 30px; background: rgba(0,0,0,0.3); border-top: 2px solid #555; max-width: 400px;}
+        
+        /* Slider Styling */
+        input[type=range] { appearance: none; -webkit-appearance: none; width: 100%; background: transparent; margin: 20px 0; }
+        input[type=range]::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; height: 25px; width: 25px; background: var(--accent-color); cursor: pointer; margin-top: -10px; border-radius: 0; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 5px; cursor: pointer; background: #333; }
+
+        /* Start Button */
+        #btn-start { 
+            background: transparent; 
+            border: 1px solid var(--accent-color); color: var(--accent-color); 
+            padding: 12px 40px; text-transform: uppercase; font-weight: bold; 
+            cursor: pointer; border-radius: 0; transition: 0.2s; z-index: 2;
+        }
+        #btn-start:hover { background: var(--accent-color); color: #000; box-shadow: 0 0 30px rgba(255, 75, 0, 0.4);}
+        #btn-start:disabled { border-color: #555; color: #555; cursor: not-allowed; box-shadow: none; background: transparent; }
+        
+        /* Neu: Loader Animation & Tab Locks */
+        .disabled-tab { opacity: 0.3 !important; pointer-events: none !important; }
+        @keyframes globalSpin { 100% { transform: rotate(360deg); } }
+        
+        .core, .ring {
+            transition: all 2.0s cubic-bezier(0.4, 0.0, 0.2, 1);
+            box-sizing: border-box;
+        }
+
+        /* PHASE 1: WAKING UP (SLEEPY BLOB) */
+        .core.phase-1 {
+            width: 250px; height: 250px; background: rgba(255,75,0,0.5);
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+            box-shadow: inset 0 0 40px rgba(255,75,0,0.8), 0 0 60px rgba(255,75,0,0.5); border: none;
+            transform: scale(1);
+        }
+        .ring.phase-1 {
+            width: 360px; height: 360px; border: 2px dashed rgba(255,75,0,0.3); 
+            border-radius: 50%; opacity: 0.8; background: transparent;
+        }
+        #core-wrap.ps-1 { animation: globalSpin 6s linear infinite; }
+        #ring-wrap.ps-1 { animation: globalSpin 12s linear infinite reverse; }
+
+        /* PHASE 2: TACTICAL ROUTING (ACTIVE LENS BLOB) */
+        .core.phase-2 {
+            width: 280px; height: 280px; background: rgba(255,75,0,0.8);
+            border-radius: 20% 80% 20% 80% / 80% 20% 80% 20%;
+            box-shadow: inset 0 0 60px rgba(255,255,255,0.2), 0 0 80px rgba(255,75,0,0.8);
+            border: 3px solid rgba(255,255,255,0.3);
+            transform: scale(0.9);
+        }
+        .ring.phase-2 {
+            width: 310px; height: 310px; border: 4px solid rgba(255,75,0,0.6); 
+            border-radius: 50%; opacity: 1; background: transparent;
+        }
+        #core-wrap.ps-2 { animation: globalSpin 3s linear infinite; }
+        #ring-wrap.ps-2 { animation: globalSpin 8s linear infinite; }
+
+        /* PHASE 3: DATA STRESS (OVERDRIVE BLOB) */
+        .core.phase-3 {
+            width: 200px; height: 200px; background: rgb(255, 200, 150);
+            border-radius: 40% 60% 50% 50% / 50% 40% 60% 50%;
+            box-shadow: 0 0 60px #fff, 0 0 90px var(--accent-color), 0 0 130px var(--accent-color);
+            border: none;
+            transform: scale(1.1);
+        }
+        .ring.phase-3 {
+            width: 340px; height: 340px; border: 8px double var(--accent-color); 
+            border-radius: 50%; opacity: 0.9; background: transparent;
+        }
+        #core-wrap.ps-3 { animation: globalSpin 0.7s linear infinite; }
+        #ring-wrap.ps-3 { animation: globalSpin 2s linear infinite reverse; }
+        
+        /* Result Tabs */
+        .res-tab { background: transparent; border: 1px solid #333; color: #888; padding: 8px 20px; cursor: pointer; text-transform: uppercase; font-size: 12px; letter-spacing: 2px; transition: 0.2s;}
+        .res-tab:hover { background: #222; color: #fff; }
+        .res-tab.active { background: rgba(255, 75, 0, 0.1); border-color: var(--accent-color); color: var(--accent-color); font-weight: bold;}
+        
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #111; border-left: 1px solid #222; }
+        ::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 0; }
+        ::-webkit-scrollbar-thumb:hover { background: #ff6a00; }
+        ::-webkit-scrollbar-corner { background: #111; }
+    </style>
+</head>
+<body>
+    <div class="window-shell state-1" id="main-shell">
+        <div class="window-frame">
+            <!-- Close Confirmation Modal -->
+    <div id="close-modal" style="display:none; position:absolute; top:35px; left:0; width:100%; height:calc(100% - 35px); background:rgba(0,0,0,0.85); z-index:9999; flex-direction:column; justify-content:center; align-items:center; -webkit-app-region: no-drag;">
+        <div style="background:#111; border: 1px solid var(--accent-color); padding: 40px; max-width: 450px; text-align:center; box-shadow: 0 0 50px rgba(255,75,0,0.1);">
+            <h3 style="color:var(--accent-color); margin-top:0; letter-spacing: 2px;">TEST IN PROGRESS</h3>
+            <p style="color:#aaa; font-size:14px; line-height: 1.6;">A deep system diagnostic is currently active. Aborting now will kill the background process. Are you sure you want to exit?</p>
+            <div style="margin-top: 35px; display:flex; justify-content:center; gap:20px;">
+                <button id="btn-cancel-close" style="background:transparent; border:1px solid #555; color:#fff; padding:10px 25px; cursor:pointer; text-transform:uppercase;">Continue Test</button>
+                <button id="btn-force-close" style="background:#ff2a2a; border:none; color:#fff; padding:10px 25px; cursor:pointer; font-weight:bold; text-transform:uppercase;">Exit SNDT</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Setup Download Screen -->
+    <div id="setup-download" style="display:none; position:absolute; top:35px; left:0; width:100%; height:calc(100% - 35px); background:#0a0a0a; z-index:9999; flex-direction:column; justify-content:center; align-items:center; -webkit-app-region: drag;">
+        <div style="background:#111; border: 1px solid var(--accent-color); padding: 40px; max-width: 500px; text-align:center; box-shadow: 0 0 50px rgba(255,75,0,0.1); -webkit-app-region: no-drag;">
+            <h3 style="color:var(--accent-color); margin-top:0; letter-spacing: 2px;">REQUIREMENTS MISSING</h3>
+            <p style="color:#aaa; font-size:14px; line-height: 1.6;">SNDT requires the 3rd-party module 'Ookla Speedtest CLI' for deep bandwidth diagnostics.</p>
+            
+            <div id="setup-load-bar" style="display:none; width: 100%; height: 2px; background: #222; margin: 30px 0; position: relative;">
+                <div style="height: 100%; width: 100%; background: var(--accent-color); box-shadow: 0 0 20px var(--accent-color); animation: pulse 1s infinite;"></div>
+                <div style="font-size: 11px; color: var(--accent-color); margin-top: 10px; letter-spacing: 2px;">DOWNLOADING MODULE...</div>
+            </div>
+
+            <div id="setup-dl-btns" style="margin-top: 35px; display:flex; justify-content:center; gap:20px;">
+                <button id="btn-setup-reject" style="background:transparent; border:1px solid #555; color:#fff; padding:10px 25px; cursor:pointer; text-transform:uppercase;">REJECT & EXIT</button>
+                <button id="btn-setup-dl" style="background:var(--accent-color); border:none; color:#111; padding:10px 25px; cursor:pointer; font-weight:bold; text-transform:uppercase;">DOWNLOAD MODULE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setup EULA Screen -->
+    <div id="setup-eula" style="display:none; position:absolute; top:35px; left:0; width:100%; height:calc(100% - 35px); background:#0a0a0a; z-index:9999; flex-direction:column; justify-content:center; align-items:center; -webkit-app-region: drag;">
+        <div style="background:#111; border: 1px solid var(--accent-color); padding: 40px; max-width: 600px; width: 85%; height: 80%; display: flex; flex-direction: column; align-items: stretch; box-shadow: 0 0 50px rgba(255,75,0,0.1); -webkit-app-region: no-drag;">
+            <h3 style="color:var(--accent-color); margin-top:0; letter-spacing: 2px; text-align: center;">OOKLA EULA & PRIVACY POLICY</h3>
+            <p style="color:#aaa; font-size:12px; text-align: center; margin-bottom: 20px;">Scroll to the very bottom to acknowledge the terms.</p>
+            
+            <pre id="eula-text" style="flex: 1; background:#000; border: 1px solid #333; padding: 20px; color: #ff4b00; font-family: 'Consolas', monospace; font-size: 13px; line-height: 1.5; overflow-y: auto; margin:0; white-space: pre-wrap;">
+SPEEDTEST CLI EULA
+==================
+By continuing, you agree to Ookla's EULA and Privacy Policy.
+
+1. ACCEPTANCE OF TERMS
+By downloading or using Speedtest CLI, these terms will automatically apply to you.
+
+2. PRIVACY
+Speedtest CLI measures your network connection by testing against servers globally. Ookla collects data including your IP address, your test results, and hardware details to provide and improve the service. Please read the full Privacy Policy at https://www.speedtest.net/about/privacy
+
+3. LICENSE
+Ookla grants you a personal, non-exclusive, non-transferable license to use the Speedtest CLI.
+
+4. DISCLAIMER
+The Software is provided "as is" without warranty of any kind.
+
+(Scroll down to accept)
+
+
+
+
+
+
+
+
+
+
+
+
+[END OF TERMS]
+            </pre>
+
+            <div style="margin-top: 25px; display:flex; justify-content:center; gap:20px;">
+                <button id="btn-eula-reject" style="background:transparent; border:1px solid #555; color:#fff; padding:10px 25px; cursor:pointer; text-transform:uppercase;">REJECT & EXIT</button>
+                <button id="btn-eula-accept" disabled style="background:#222; border:1px solid #333; color:#555; padding:10px 25px; cursor:not-allowed; font-weight:bold; text-transform:uppercase;">ACCEPT TERMS</button>
+            </div>
+        </div>
+    </div>
+
+        <div class="title-bar">
+            <div class="title-text" style="display: flex; align-items: center; gap: 8px;">
+                <img src="../sndt_logo.svg" alt="SNDT Logo" style="width: 14px; height: 14px; filter: drop-shadow(0 0 5px rgba(255,75,0,0.5));" />
+                <span>SNDT - SINN NETWORK DIAGNOSTICS TOOL v1.1.5</span>
+            </div>
+            <div class="window-controls">
+                <button class="control-btn min-btn">_</button>
+                <button class="control-btn close-btn">X</button>
+            </div>
+        </div>
+        
+        <!-- SPLASH SCREEN -->
+        <div id="splash-screen">
+            <img src="../sndt_logo.svg" alt="" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75%; max-width: 600px; height: auto; opacity: 0.12; z-index: 0; pointer-events: none;" />
+            <div class="splash-logo" style="position: relative; z-index: 1;">SNDT</div>
+            <div class="splash-sub" style="position: relative; z-index: 1;">GLOBAL RELEASE EDITION</div>
+            <button class="splash-btn" id="enter-btn" style="position: relative; z-index: 1;">ENTER SYSTEM</button>
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="sidebar-title">SYSTEM</div>
+                <div class="nav-item active" data-target="info">ADAPTER INFO</div>
+                <div class="nav-item" data-target="settings">SETTINGS</div>
+
+                <div class="sidebar-title">TEST MODES</div>
+                <div class="nav-item" data-target="a">AUTO (Full Check)</div>
+                <div class="nav-item" data-target="b">FAST DIAG</div>
+                
+                <div class="sidebar-title">DNS BENCHMARK</div>
+                <div class="nav-item" data-target="1">Google DNS</div>
+                <div class="nav-item" data-target="2">Cloudflare DNS</div>
+                
+                <div class="sidebar-title">GAMING / STREAMING</div>
+                <div class="nav-item" data-target="3">YouTube</div>
+                <div class="nav-item" data-target="4">Discord</div>
+                <div class="nav-item" data-target="5">Twitch</div>
+                <div class="nav-item" data-target="6">Blizzard (EU)</div>
+            </div>
+            
+            <div class="dash-h">
+                <div class="huge-bg">SNDT<br>v1.1<span style="position:absolute;">.5</span></div>
+                
+                <!-- Loading Overlay: moved to dash-h to cover everything including padding, preventing ANY clipping -->
+                <div id="tm-loading" style="display:none; position:absolute; top:0; left:0; right:0; bottom:0; flex-direction:column; justify-content:center; align-items:center; z-index:100; background: var(--bg-color);">
+                    <!-- Morph + Text Centering Container -->
+                    <div style="position:relative; width: min(420px, 55vh); height: min(420px, 55vh); display:flex; justify-content:center; align-items:center; flex-shrink: 0;">
+                        <div id="ring-wrap" class="ps-1" style="position:absolute; width:100%; height:100%; display:flex; justify-content:center; align-items:center; z-index:0;">
+                            <div id="ring-shape" class="ring phase-1"></div>
+                        </div>
+                        <div id="core-wrap" class="ps-1" style="position:absolute; width:100%; height:100%; display:flex; justify-content:center; align-items:center; z-index:0;">
+                            <div id="core-shape" class="core phase-1"></div>
+                        </div>
+                        <div style="font-size: 90px; color: #fff; font-weight: 300; line-height: 1; z-index: 2; text-shadow: 0 0 20px #000; text-align: center; display:flex; align-items:baseline;" id="load-pct">0<span style="color: var(--accent-color); font-weight: bold; font-size: 40px; margin-left: 2px;">%</span></div>
+                    </div>
+
+                    <div style="font-size: 14px; color: var(--accent-color); text-shadow: 0 0 10px rgba(255,75,0,0.5); font-weight:bold; letter-spacing: 5px; text-transform: uppercase; margin-top: 8px; z-index: 2; transition: 0.5s;" id="load-status">ANALYZING PACKETS...</div>
+                    
+                    <div style="width: 80%; max-width: 500px; height: 2px; background: #222; margin-top: 20px; position: relative; z-index: 2;">
+                        <div id="load-bar" style="height: 100%; width: 0%; background: var(--accent-color); transition: width 0.7s cubic-bezier(0.25, 0.1, 0.25, 1); box-shadow: 0 0 20px var(--accent-color);"></div>
+                    </div>
+                </div>
+
+                <div class="dash-inner" id="scale-container" style="position:relative;">
+
+                    <div class="target-display" id="target-display-bar">TARGET: <span id="current-target-text">ADAPTER INFO</span></div>
+
+
+                    <!-- INFO VIEW -->
+                    <div class="dash-info" id="view-info">
+                        <div class="info-grid">
+                            <div class="info-card wide">
+                                <div class="info-label">Network Interface Hardware</div>
+                                <div class="info-value" id="info-hw" style="font-size:22px;">Scanning Neural Link...</div>
+                            </div>
+                            
+                            <!-- Spilled into discrete grid cards so it fits without scrolling or weird wraps -->
+                            <div class="info-card">
+                                <div class="info-label">Active Gateway Node</div>
+                                <div class="info-value" style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span id="info-gw" class="blurred-ip">...</span>
+                                    <span class="eye-toggle" onclick="toggleIpBlur(this)">
+                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" class="eye-icon" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    </span>
+                                </div>
+                                <div id="info-gw-type" style="font-size:10px; color:#888; margin-top:4px; letter-spacing:1px;"></div>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-label">Wi-Fi Status</div>
+                                <div class="info-value" id="info-status">...</div>
+                            </div>
+
+                            <div class="info-card">
+                                <div class="info-label">IPv4 Core Latency</div>
+                                <div class="info-value" id="info-v4">...</div>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-label">IPv6 Core Latency</div>
+                                <div class="info-value" id="info-v6">...</div>
+                            </div>
+
+                            <div class="info-card">
+                                <div class="info-label">External IPv4 (WAN)</div>
+                                <div class="info-value" style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span id="info-extv4" class="blurred-ip" style="color:#aaa; font-weight: normal;">...</span>
+                                    <span class="eye-toggle" onclick="toggleIpBlur(this)">
+                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" class="eye-icon" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-label">External IPv6 (WAN)</div>
+                                <div class="info-value" style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span id="info-extv6" class="blurred-ip" style="color:#aaa; font-weight: normal;">...</span>
+                                    <span class="eye-toggle" onclick="toggleIpBlur(this)">
+                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" class="eye-icon" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SETTINGS VIEW -->
+                    <div class="dash-settings" id="view-settings">
+                        <div class="settings-card">
+                            <div class="m-title" style="color:#fff; font-size:16px;">UI Scaling (Resolution Override)</div>
+                            <div style="font-size:12px; color:#888; margin-bottom:15px;">Adjust visual elements for 1080p, 1440p, or 4K.</div>
+                            <input type="range" id="scale-slider" min="0.6" max="1.6" step="0.05" value="1.0">
+                            <div style="text-align: right; color: var(--accent-color); font-weight: bold;" id="scale-val">100%</div>
+                        </div>
+                    </div>
+
+                    <!-- METRICS VIEW (Wrapper for Test states) -->
+                    <div class="dash-metrics" id="view-metrics" style="display:none; position:relative; flex:1;">
+                        
+                        <!-- State 1: Intro -->
+                        <div id="tm-intro" style="display:block; padding-top: 20px;">
+                            <div style="font-size: 20px; color: #fff; margin-bottom: 20px; letter-spacing: 2px;" id="tm-title">...</div>
+                            <div style="font-size: 14px; color: #888; margin-bottom: 40px; line-height: 1.6; max-width: 650px;" id="tm-desc">...</div>
+                            <button id="btn-start">INITIALIZE DIAGNOSTICS</button>
+                        </div>
+
+
+
+                        <!-- State 3: Detailed Results -->
+                        <div id="tm-results" style="display:none; padding-bottom: 5px; overflow-y: hidden;">
+                            
+                            <!-- Result Tabs Nav -->
+                            <div id="res-tab-nav" style="display:flex; gap:10px; margin-bottom:15px;">
+                                <button class="res-tab active" data-tab="overview">OVERVIEW</button>
+                                <button class="res-tab" data-tab="dns">DNS BENCHMARK</button>
+                                <button class="res-tab" data-tab="trace" id="tab-btn-trace">TRACEROUTE</button>
+                            </div>
+
+                            <!-- TAB 1: OVERVIEW -->
+                            <div id="res-view-overview">
+                                <!-- Top Area: Score & Internet -->
+                                <div style="display: flex; gap: 20px; align-items: stretch; margin-bottom: 15px;">
+                                <!-- Score Box -->
+                                <div style="flex: 0 0 160px; background: rgba(20,20,20,0.4); border: 1px solid #333; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px;">
+                                    <div style="font-size: 10px; color: #888; letter-spacing: 2px; margin-bottom: 5px;">SYSTEM SCORE</div>
+                                    <div id="res-score" style="font-size: 65px; font-weight: 900; line-height: 1; margin-bottom: 2px;">-</div>
+                                    <div id="res-scoretext" style="font-size: 10px; color: #aaa; letter-spacing: 1px; text-align: center; text-transform: uppercase;">...</div>
+                                </div>
+
+                                <!-- Internet / Target Grid -->
+                                <div style="flex: 1;">
+                                    <div style="font-size: 11px; color: #666; letter-spacing: 2px; margin-bottom: 5px; text-transform:uppercase;">INTERNET ROUTE (TARGET)</div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                        <div class="info-card">
+                                            <div class="info-label">Active Protocol</div>
+                                            <div class="info-value" id="res-proto" style="font-size: 22px;">--</div>
+                                        </div>
+                                        <div class="info-card">
+                                            <div class="info-label">Target Latency</div>
+                                            <div class="info-value" id="res-lat" style="font-size: 22px;">--</div>
+                                        </div>
+                                        <div class="info-card">
+                                            <div class="info-label">Jitter Variance</div>
+                                            <div class="info-value" id="res-jit" style="font-size: 22px;">--</div>
+                                        </div>
+                                        <div class="info-card">
+                                            <div class="info-label">Packet Loss</div>
+                                            <div class="info-value" id="res-loss" style="font-size: 22px;">--</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Router Local Grid -->
+                            <div style="margin-bottom: 15px;">
+                                <div style="font-size: 11px; color: #666; letter-spacing: 2px; margin-bottom: 5px; text-transform:uppercase;">LOCAL GATEWAY (ROUTER)</div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                                    <div class="info-card" style="border-top-color: #03a9f4; background: rgba(3,169,244,0.05);">
+                                        <div class="info-label" style="color:#03a9f4; opacity: 0.8;">Router Latency</div>
+                                        <div class="info-value"><span id="res-r-lat" style="font-size: 22px; color:#fff;">--</span> ms</div>
+                                    </div>
+                                    <div class="info-card" style="border-top-color: #03a9f4; background: rgba(3,169,244,0.05);">
+                                        <div class="info-label" style="color:#03a9f4; opacity: 0.8;">Router Jitter</div>
+                                        <div class="info-value"><span id="res-r-jit" style="font-size: 22px; color:#fff;">--</span> ms</div>
+                                    </div>
+                                    <div class="info-card" style="border-top-color: #03a9f4; background: rgba(3,169,244,0.05);">
+                                        <div class="info-label" style="color:#03a9f4; opacity: 0.8;">Router Loss</div>
+                                        <div class="info-value"><span id="res-r-loss" style="font-size: 22px; color:#fff;">--</span> %</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Optional Speedtest Box (Only shown if Speedtest ran) -->
+                            <div id="tm-speed" style="display: none; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                                <div class="info-card" style="border-top-color: #4CAF50;">
+                                    <div class="info-label">Download</div>
+                                    <div class="info-value"><span id="res-dl" style="color: #4CAF50; font-size:20px;">--</span> Mbps</div>
+                                </div>
+                                <div class="info-card" style="border-top-color: #2196F3;">
+                                    <div class="info-label">Upload</div>
+                                    <div class="info-value"><span id="res-ul" style="color: #2196F3; font-size:20px;">--</span> Mbps</div>
+                                </div>
+                                <div class="info-card" style="border-top-color: #FFC107;">
+                                    <div class="info-label">Bufferbloat Add</div>
+                                    <div class="info-value"><span id="res-bb" style="color: #FFC107; font-size:20px;">--</span> ms</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Dynamic Bufferbloat Warning -->
+                            <div id="res-bb-warning" style="display:none; margin-top: 10px; font-size: 12px; color: #aaa; border-left: 3px solid #555; padding: 8px 12px; background: rgba(0,0,0,0.3);">
+                                --
+                            </div>
+                            
+                        </div> <!-- End of res-view-overview -->
+                            
+                            <!-- TAB 2: DNS BENCHMARK -->
+                            <div id="res-view-dns" style="display:none;">
+                                <div style="font-size: 11px; color: #666; letter-spacing: 2px; margin-bottom: 10px; text-transform:uppercase;">DNS RESOLVER LATENCIES</div>
+                                <div id="dns-table-container" style="display:flex; flex-direction:column; gap:8px;">
+                                    <!-- Filled via JS -->
+                                </div>
+                                <div id="dns-summary-text" style="margin-top: 20px; color: #888; font-size: 12px; letter-spacing: 1px;">...</div>
+                            </div>
+
+                            <!-- TAB 3: TRACEROUTE -->
+                            <div id="res-view-trace" style="display:none; height: 350px;">
+                                <div style="font-size: 11px; color: #666; letter-spacing: 2px; margin-bottom: 10px; text-transform:uppercase;">HOP-BY-HOP ROUTING LOG</div>
+                                <pre id="trace-out" style="background:#000; color:var(--accent-color); font-family: 'Consolas', monospace; font-size: 12px; padding: 10px; border: 1px solid #333; height: calc(100% - 30px); overflow-y: auto; border-left: 2px solid var(--accent-color);"></pre>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- ELECTRON & POWERSHELL IPC SCRIPT -->
+    <script>
+        const { ipcRenderer, webFrame } = require('electron');
+        const { spawn } = require('child_process');
+        const path = require('path');
+
+        // Border Engine Spark System
+        let sparkInterval = null;
+        function setMainShellState(phase) {
+            const shell = document.getElementById('main-shell');
+            if (shell) shell.className = 'window-shell state-' + phase;
+            
+            if (phase === 3) {
+                if (!sparkInterval) sparkInterval = setInterval(createSpark, 100);
+            } else {
+                if (sparkInterval) { clearInterval(sparkInterval); sparkInterval = null; }
+            }
+        }
+        function createSpark() {
+            const shell = document.getElementById('main-shell');
+            if(!shell) return;
+            const spark = document.createElement('div');
+            spark.className = 'spark';
+            const x = Math.random() * shell.offsetWidth;
+            const isTop = Math.random() > 0.2;
+            const y = isTop ? -2 : shell.offsetHeight + 2;
+            spark.style.left = x + 'px';
+            spark.style.top = y + 'px';
+            const flyY = isTop ? - (Math.random() * 50 + 30) : (Math.random() * 40 + 20);
+            const flyX = (Math.random() - 0.5) * 40;
+            spark.style.setProperty('--flyX', flyX + 'px');
+            spark.style.setProperty('--flyY', flyY + 'px');
+            shell.appendChild(spark);
+            setTimeout(() => { if (spark.parentNode) spark.remove(); }, 1000);
+        }
+
+        function toggleIpBlur(btn) {
+            const target = btn.previousElementSibling;
+            target.classList.toggle('revealed');
+            if (target.classList.contains('revealed')) {
+                btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+                btn.style.color = "var(--accent-color)";
+            } else {
+                btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+                btn.style.color = "#888";
+            }
+        }
+
+        // Window Controls
+        let isTesting = false;
+        document.querySelector('.min-btn').addEventListener('click', () => ipcRenderer.send('window-min'));
+        
+        document.querySelector('.close-btn').addEventListener('click', () => {
+             if(isTesting) {
+                 document.getElementById('close-modal').style.display = 'flex';
+             } else {
+                 ipcRenderer.send('window-close');
+             }
+        });
+        
+        document.getElementById('btn-cancel-close').addEventListener('click', () => {
+             document.getElementById('close-modal').style.display = 'none';
+        });
+        
+        document.getElementById('btn-force-close').addEventListener('click', () => {
+             ipcRenderer.send('window-close');
+        });
+
+        // =============================================
+        // BOOT: Load System Info immediately on page load
+        // PS1 returns JSON with: Adapter, Gateway, ConnType, PingV4,
+        // PingV6, ExtIPv4, ExtIPv6, OoklaExists, EulaAccepted
+        // =============================================
+        (function bootLoadInfo() {
+            const psScript = path.join(__dirname, '..', 'Engine', 'engine.ps1');
+            const childInfo = spawn('powershell.exe', ['-ExecutionPolicy', 'Bypass', '-NoProfile', '-File', psScript, '-JsonMode', '-InfoOnly'], { windowsHide: true });
+            
+            let infoData = '';
+            childInfo.stdout.on('data', (d) => infoData += d.toString());
+            
+            childInfo.on('close', () => {
+                try {
+                    const start = infoData.indexOf('{');
+                    const end   = infoData.lastIndexOf('}');
+                    if (start === -1 || end === -1) throw new Error('No JSON found in: ' + infoData);
+                    const info = JSON.parse(infoData.substring(start, end + 1));
+
+                    if (info.Adapter)              document.getElementById('info-hw').innerHTML     = `<span>${info.Adapter.split(' ')[0]}</span> ${info.Adapter.substring(info.Adapter.indexOf(' ') + 1)}`;
+                    if (info.Gateway)              document.getElementById('info-gw').innerText     = info.Gateway;
+                    if (info.GatewayType) {
+                        const isRepeater = info.GatewayType.includes('Repeater') || info.GatewayType.includes('Extender');
+                        const typeColor  = isRepeater ? '#e67e22' : '#2ecc71';
+                        const latStr     = (info.GatewayLatency != null) ? ` <span style="color:#888;">· ${info.GatewayLatency} ms</span>` : '';
+                        document.getElementById('info-gw-type').innerHTML = `<span style="color:${typeColor}; font-weight:bold;">⬤</span> ${info.GatewayType}${latStr}`;
+                    }
+                    if (info.PingV4 !== undefined) document.getElementById('info-v4').innerHTML    = `<span>${info.PingV4}</span> ms`;
+                    if (info.PingV6 !== undefined) document.getElementById('info-v6').innerHTML    = `<span>${info.PingV6}</span> ms`;
+                    if (info.ExtIPv4)              document.getElementById('info-extv4').innerText  = info.ExtIPv4;
+                    
+                    // IPv6: show what we have, then retry if N/A
+                    const v6El = document.getElementById('info-extv6');
+                    if (info.ExtIPv6 && info.ExtIPv6 !== 'N/A') {
+                        v6El.innerText = info.ExtIPv6;
+                    } else {
+                        v6El.innerText = 'Resolving...';
+                        // Retry up to 3 times with staggered delays
+                        let retries = 0;
+                        const retryV6 = () => {
+                            if (retries >= 3) { v6El.innerText = 'N/A'; return; }
+                            retries++;
+                            const psS = path.join(__dirname, '..', 'Engine', 'engine.ps1');
+                            const child = spawn('powershell.exe', ['-ExecutionPolicy','Bypass','-NoProfile','-Command',
+                                `(Invoke-RestMethod 'https://api6.ipify.org' -TimeoutSec 8 -UseBasicParsing 2>$null) ?? (Invoke-RestMethod 'https://v6.ident.me' -TimeoutSec 6 -UseBasicParsing 2>$null)`
+                            ], { windowsHide: true });
+                            let out = '';
+                            child.stdout.on('data', d => out += d.toString());
+                            child.on('close', () => {
+                                const ip = out.trim();
+                                if (ip && ip.includes(':')) {
+                                    v6El.innerText = ip;
+                                } else {
+                                    setTimeout(retryV6, 4000);
+                                }
+                            });
+                        };
+                        setTimeout(retryV6, 3000);
+                    }
+                    
+                    if (info.ConnType)             document.getElementById('info-status').innerHTML = info.ConnType
+                        .replace('Wi-Fi', '<span>Wi-Fi</span>')
+                        .replace('LAN Cable', '<span>LAN Cable</span>');
+
+                    // CRITICAL: these values gate the EULA flow. Never skip without confirmation.
+                    window.OoklaExists  = !!info.OoklaExists;
+                    window.EulaAccepted = !!info.EulaAccepted;
+                    
+                    console.log(`[SNDT Boot] OoklaExists=${window.OoklaExists}, EulaAccepted=${window.EulaAccepted}`);
+                } catch(e) {
+                    // If JSON parsing fails, default to SAFE state (require EULA, skip Ookla requirement)
+                    // Never skip EULA silently.
+                    console.error('[SNDT Boot] Parse error:', e.message);
+                    window.OoklaExists  = true;   // assume Ookla exists so we don't force download
+                    window.EulaAccepted = false;  // always require EULA acceptance if we can't verify
+                }
+            });
+
+            childInfo.on('error', (err) => {
+                console.error('[SNDT Boot] PS1 spawn error:', err);
+                window.OoklaExists  = true;
+                window.EulaAccepted = false; // safe default: show EULA
+            });
+
+            // Safety timeout: if PS1 hangs >20s, unblock button but still check EULA
+            setTimeout(() => {
+                if (typeof window.OoklaExists === 'undefined') {
+                    console.warn('[SNDT Boot] Timeout – showing EULA as safety measure');
+                    window.OoklaExists  = true;
+                    window.EulaAccepted = false; // show EULA if we timed out
+                }
+            }, 20000);
+        })();
+
+        // Start Screen Logic & Setup Flow
+        document.getElementById('enter-btn').addEventListener('click', function() {
+            if (typeof window.OoklaExists === 'undefined') {
+                this.innerHTML = `
+                    <div style="display:flex; justify-content:center; align-items:center; gap: 15px;">
+                        <span>INITIALIZING...</span>
+                        <div class="loader-13">
+                            <div class="l13-1"></div>
+                            <div class="l13-2"></div>
+                            <div class="l13-3"></div>
+                        </div>
+                    </div>
+                `;
+                this.style.pointerEvents = 'none';
+                this.style.opacity = '0.5';
+                
+                const checkInt = setInterval(() => {
+                    if (typeof window.OoklaExists !== 'undefined') {
+                        clearInterval(checkInt);
+                        this.style.pointerEvents = 'all';
+                        this.click(); // Re-trigger
+                    }
+                }, 200);
+                return;
+            }
+            
+            if (window.OoklaExists === false || window.EulaAccepted === false) {
+                document.getElementById('splash-screen').style.display = 'none';
+                
+                if (window.OoklaExists === false) {
+                    document.getElementById('setup-download').style.display = 'flex';
+                } else {
+                    document.getElementById('setup-eula').style.display = 'flex';
+                }
+            } else {
+                const splash = document.getElementById('splash-screen');
+                splash.style.opacity = '0';
+                setTimeout(() => splash.style.display = 'none', 500);
+            }
+        });
+        
+        // Setup Screen - Flow Handlers
+        const psScript = path.join(__dirname, '..', 'Engine', 'engine.ps1');
+        
+        document.getElementById('btn-setup-reject').addEventListener('click', () => ipcRenderer.send('window-close'));
+        document.getElementById('btn-eula-reject').addEventListener('click', () => ipcRenderer.send('window-close'));
+        
+        document.getElementById('btn-setup-dl').addEventListener('click', () => {
+            document.getElementById('setup-dl-btns').style.display = 'none';
+            document.getElementById('setup-load-bar').style.display = 'block';
+            
+            const dlChild = spawn('powershell.exe', ['-ExecutionPolicy', 'Bypass', '-NoProfile', '-File', psScript, '-SetupDownloadOokla'], { windowsHide: true });
+            dlChild.on('close', () => {
+                document.getElementById('setup-download').style.display = 'none';
+                document.getElementById('setup-eula').style.display = 'flex';
+            });
+        });
+        
+        // EULA Scrolling Logic
+        const eulaTextBox = document.getElementById('eula-text');
+        const eulaAcceptBtn = document.getElementById('btn-eula-accept');
+        
+        eulaTextBox.addEventListener('scroll', () => {
+            if (eulaTextBox.scrollTop + eulaTextBox.clientHeight >= eulaTextBox.scrollHeight - 5) {
+                eulaAcceptBtn.disabled = false;
+                eulaAcceptBtn.style.background = 'var(--accent-color)';
+                eulaAcceptBtn.style.border = 'none';
+                eulaAcceptBtn.style.color = '#111';
+                eulaAcceptBtn.style.cursor = 'pointer';
+            }
+        });
+        
+        document.getElementById('btn-eula-accept').addEventListener('click', () => {
+            const eulaBtn = document.getElementById('btn-eula-accept');
+            eulaBtn.innerText = 'SAVING...';
+            eulaBtn.disabled = true;
+            
+            const eulaChild = spawn('powershell.exe', ['-ExecutionPolicy', 'Bypass', '-NoProfile', '-File', psScript, '-SetupSignEula'], { windowsHide: true });
+            eulaChild.on('close', () => {
+                window.EulaAccepted = true;
+                window.OoklaExists = true;
+                
+                document.getElementById('setup-eula').style.display = 'none';
+                // Trigger normal flash transition
+                const splash = document.getElementById('splash-screen');
+                splash.style.opacity = '0';
+                setTimeout(() => splash.style.display = 'none', 500);
+            });
+        });
+
+        // Settings Scale
+        const scaleSlider = document.getElementById('scale-slider');
+        const scaleVal = document.getElementById('scale-val');
+        const scaleContainer = document.getElementById('scale-container');
+        
+        // Settings laden (Boot)
+        const savedScale = localStorage.getItem('sndt_scale');
+        if (savedScale && parseFloat(savedScale) !== 1.0) {
+            const numScale = parseFloat(savedScale);
+            scaleSlider.value = numScale;
+            scaleVal.innerText = Math.round(numScale * 100) + "%";
+            webFrame.setZoomFactor(numScale);
+            ipcRenderer.send('window-resize-instant', numScale);
+        }
+        
+        scaleSlider.addEventListener('input', (e) => {
+            // Nur den Text-Wert updaten, aber noch nichts rendern. Verhindert das harte Ruckeln!
+            const val = parseFloat(e.target.value);
+            scaleVal.innerText = Math.round(val * 100) + "% (Release to apply)";
+        });
+
+        scaleSlider.addEventListener('change', (e) => {
+            const endVal = parseFloat(e.target.value);
+            const startVal = webFrame.getZoomFactor();
+            
+            // Setting speichern
+            localStorage.setItem('sndt_scale', endVal);
+            
+            // 1. Physisches OS-Fenster animieren
+            ipcRenderer.send('window-resize-animated', endVal);
+            
+            // 2. Inhalt (Schriften/Layout) via JS synchron animieren
+            const duration = 300;
+            const steps = 25;
+            let currentStep = 0;
+            
+            if (window.zoomInterval) clearInterval(window.zoomInterval);
+            
+            window.zoomInterval = setInterval(() => {
+                currentStep++;
+                const progress = currentStep / steps;
+                const ease = Math.sin(progress * Math.PI / 2); // Identische Sine Curve
+                
+                const curVal = startVal + (endVal - startVal) * ease;
+                webFrame.setZoomFactor(curVal);
+                
+                if (currentStep >= steps) clearInterval(window.zoomInterval);
+            }, duration / steps);
+            
+            scaleVal.innerText = Math.round(endVal * 100) + "%";
+        });
+
+        // Tab Logic (Sub-Tabs)
+        const resTabs = document.querySelectorAll('.res-tab');
+        resTabs.forEach(tb => {
+            tb.addEventListener('click', () => {
+                resTabs.forEach(t => t.classList.remove('active'));
+                tb.classList.add('active');
+                
+                document.getElementById('res-view-overview').style.display = 'none';
+                document.getElementById('res-view-dns').style.display = 'none';
+                document.getElementById('res-view-trace').style.display = 'none';
+                
+                document.getElementById(`res-view-${tb.getAttribute('data-tab')}`).style.display = 'block';
+            });
+        });
+
+        // Navigation Logic
+        let currentTargetId = 'info'; 
+        const navItems = document.querySelectorAll('.nav-item');
+        const viewInfo = document.getElementById('view-info');
+        const viewSettings = document.getElementById('view-settings');
+        const viewMetrics = document.getElementById('view-metrics');
+        
+        const tmIntro = document.getElementById('tm-intro');
+        const tmLoading = document.getElementById('tm-loading');
+        const tmResults = document.getElementById('tm-results');
+        const btnStart = document.getElementById('btn-start');
+        
+        const loadPct = document.getElementById('load-pct');
+        const loadBar = document.getElementById('load-bar');
+        const loadStatus = document.getElementById('load-status');
+        const tmSpeed = document.getElementById('tm-speed');
+        
+        const targetText = document.getElementById('current-target-text');
+        
+        const targetInfo = {
+            'a': { title: "AUTO (FULL CHECK)", desc: "Performs an exhaustive diagnostic including IPv4 vs IPv6 routing evaluation, 500-packet stress test, jitter calculation, and a full Ookla bandwidth test to measure Under-Load Bufferbloat." },
+            'b': { title: "FAST DIAG", desc: "A rapid evaluation of your routing latency and a lightweight bandwidth test. Perfect for a quick daily check." },
+            '1': { title: "GOOGLE DNS", desc: "Measures pure connection routing ping to Google's highly optimized global DNS servers (8.8.8.8)." },
+            '2': { title: "CLOUDFLARE DNS", desc: "Measures ping to Cloudflare's privacy-first 1.1.1.1 edge servers." },
+            '3': { title: "YOUTUBE DATA CENTER", desc: "Evaluates real-time streaming latency to YouTube infrastructure." },
+            '4': { title: "DISCORD VOICE", desc: "Tests voice packet routing stability to Discord's primary communication backends." },
+            '5': { title: "TWITCH INGEST", desc: "Crucial for streamers! Measures latency and route stability to Twitch broadcast servers." },
+            '6': { title: "BLIZZARD EU", desc: "Tests latency to Battle.net European gaming infrastructure." },
+            '7': { title: "AWS EU CENTRAL", desc: "Evaluates routing to Amazon Web Services Frankfurt (eu-central-1), used by many modern games." }
+        };
+
+        function hideAllViews() {
+            viewInfo.style.display = 'none';
+            viewMetrics.style.display = 'none';
+            viewSettings.style.display = 'none';
+        }
+
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                if (typeof window.OoklaExists === 'undefined' || window.OoklaExists === false || window.EulaAccepted === false) {
+                    return; // Sicherheitsblock, wenn nicht setup
+                }
+                
+                if (activeProcess) return;
+                
+                navItems.forEach(n => n.classList.remove('active'));
+                item.classList.add('active');
+                currentTargetId = item.getAttribute('data-target');
+                targetText.innerText = item.innerText.toUpperCase();
+                
+                hideAllViews();
+
+                if (currentTargetId === 'info') {
+                    viewInfo.style.display = 'block';
+                } else if (currentTargetId === 'settings') {
+                    viewSettings.style.display = 'block';
+                } else {
+                    viewMetrics.style.display = 'flex';
+                    
+                    // Reset to State 1 (Intro)
+                    setMainShellState(1);
+                    
+                    document.getElementById('tm-title').innerText = targetInfo[currentTargetId].title;
+                    document.getElementById('tm-desc').innerText = targetInfo[currentTargetId].desc;
+                    
+                    tmIntro.style.display = 'block';
+                    tmLoading.style.display = 'none';
+                    tmResults.style.display = 'none';
+                    btnStart.disabled = false;
+                }
+            });
+        });
+
+        // Start Test Live Logic (Echter Live Stream aus PS1)
+        let activeProcess = null;
+        btnStart.addEventListener('click', () => {
+            btnStart.disabled = true;
+            isTesting = true;
+            navItems.forEach(n => n.classList.add('disabled-tab'));
+            document.getElementById('scale-container').style.overflowY = 'hidden';
+            
+            // Switch to State 2 (Loading)
+            setMainShellState(2);
+            tmIntro.style.opacity = '0';
+            setTimeout(() => {
+                tmIntro.style.display = 'none';
+                tmIntro.style.opacity = '1';
+                tmLoading.style.display = 'flex';
+            }, 200);
+            
+            document.getElementById('core-shape').className = "core phase-1";
+            document.getElementById('ring-shape').className = "ring phase-1";
+            document.getElementById('core-wrap').className = "ps-1";
+            document.getElementById('ring-wrap').className = "ps-1";
+            
+            loadPct.innerHTML = `0<span style="color: var(--accent-color); font-weight: bold; font-size: 40px; margin-left: 2px;">%</span>`;
+            loadBar.style.width = "0%";
+            loadStatus.innerText = "WARMING UP ENGINE...";
+            
+            const psScript = path.join(__dirname, '..', 'Engine', 'engine.ps1');
+            activeProcess = spawn('powershell.exe', ['-ExecutionPolicy', 'Bypass', '-NoProfile', '-File', psScript, '-JsonMode', '-TargetMode', currentTargetId], { windowsHide: true });
+            
+            let buffer = "";
+            activeProcess.stdout.on('data', (d) => {
+                buffer += d.toString();
+                let lines = buffer.split('\n');
+                buffer = lines.pop(); // Reststück aufheben für nächsten Chunk
+                
+                for (let line of lines) {
+                    if(!line.trim().startsWith('{')) continue; // Nur JSON Zeilen verarbeiten
+                    try {
+                        const parsed = JSON.parse(line.trim());
+                        
+                        if (parsed.Type === "Progress") {
+                            loadPct.innerHTML = parsed.Pct + `<span style="color: var(--accent-color); font-weight: bold; font-size: 40px; margin-left: 2px;">%</span>`;
+                            loadBar.style.width = parsed.Pct + "%";
+                            loadStatus.innerText = parsed.Msg.toUpperCase();
+                            
+                            // Morph Core Phase Logic
+                            if (parsed.Pct < 35) {
+                                document.getElementById('core-shape').className = "core phase-1";
+                                document.getElementById('ring-shape').className = "ring phase-1";
+                                document.getElementById('core-wrap').className = "ps-1";
+                                document.getElementById('ring-wrap').className = "ps-1";
+                                setMainShellState(2);
+                            } else if (parsed.Pct >= 35 && parsed.Pct < 70) {
+                                document.getElementById('core-shape').className = "core phase-2";
+                                document.getElementById('ring-shape').className = "ring phase-2";
+                                document.getElementById('core-wrap').className = "ps-2";
+                                document.getElementById('ring-wrap').className = "ps-2";
+                                setMainShellState(2);
+                            } else if (parsed.Pct >= 70) {
+                                document.getElementById('core-shape').className = "core phase-3";
+                                document.getElementById('ring-shape').className = "ring phase-3";
+                                document.getElementById('core-wrap').className = "ps-3";
+                                document.getElementById('ring-wrap').className = "ps-3";
+                                setMainShellState(3);
+                            }
+                        } 
+                        else if (parsed.Type === "Result") {
+                            // Finale Resultate
+                            isTesting = false;
+                            navItems.forEach(n => n.classList.remove('disabled-tab'));
+                            setMainShellState(4);
+                            setTimeout(() => { setMainShellState(1); }, 8000); // cooldown phase length
+                            
+                            loadPct.innerHTML = `100<span style="color: var(--accent-color); font-weight: bold; font-size: 40px; margin-left: 2px;">%</span>`;
+                            loadBar.style.width = "100%";
+                            loadStatus.innerText = "ANALYSIS COMPLETE";
+                            
+                            setTimeout(() => {
+                                tmLoading.style.display = 'none';
+                                tmResults.style.display = 'block';
+                                document.getElementById('scale-container').style.overflowY = 'auto';
+                                
+                                document.getElementById('res-score').innerText = parsed.Score || "?";
+                                
+                                let scColor = '#fff';
+                                if (parsed.Score.includes('A')) scColor = '#00e676';
+                                else if (parsed.Score.includes('B')) scColor = '#76ff03';
+                                else if (parsed.Score.includes('C')) scColor = '#ffc107';
+                                else if (parsed.Score.includes('D')) scColor = '#ff9100';
+                                else scColor = '#ff1744';
+                                document.getElementById('res-score').style.color = scColor;
+                                
+                                document.getElementById('res-scoretext').innerText = parsed.ScoreText ? parsed.ScoreText.toUpperCase() : "ANALYSIS FINISHED";
+                                
+                                // Router Info
+                                document.getElementById('res-r-lat').innerText = parsed.RouterLat;
+                                document.getElementById('res-r-jit').innerText = parsed.RouterJit;
+                                document.getElementById('res-r-loss').innerText = parsed.RouterLoss;
+                                
+                                // Internet Info
+                                document.getElementById('res-lat').innerHTML = `<span>${parsed.Latency}</span> ms`;
+                                document.getElementById('res-proto').innerHTML = parsed.Protocol;
+                                document.getElementById('res-jit').innerHTML = `<span>${parsed.Jitter}</span> ms`;
+                                document.getElementById('res-loss').innerHTML = `<span>${parsed.Loss}</span> %`;
+                                
+                                // Show/Hide Speedtest Row
+                                if (parsed.Download) {
+                                    tmSpeed.style.display = 'grid';
+                                    document.getElementById('res-dl').innerText = parsed.Download;
+                                    document.getElementById('res-ul').innerText = parsed.Upload;
+                                    document.getElementById('res-bb').innerText = (parsed.Bufferbloat > 0 ? "+" : "") + parsed.Bufferbloat;
+                                    
+                                    let bbWarning = "";
+                                    let bbColor = "#4CAF50";
+                                    if (parsed.Bufferbloat > 60) {
+                                        bbWarning = "SEVERE BUFFERBLOAT: Huge latency spikes detected during heavy network traffic. This will cause obvious lagging in games while downloading.";
+                                        bbColor = "#f44336";
+                                    } else if (parsed.Bufferbloat > 20) {
+                                        bbWarning = "NOTICEABLE BUFFERBLOAT: Minor stuttering may occur during streams or gaming if other devices download data simultaneously.";
+                                        bbColor = "#FFC107";
+                                    } else {
+                                        bbWarning = "OPTIMAL BUFFER MANAGEMENT: Your router queues traffic flawlessly without inducing lag under high load.";
+                                    }
+                                    
+                                    const wBox = document.getElementById('res-bb-warning');
+                                    wBox.style.display = 'block';
+                                    wBox.innerText = bbWarning;
+                                    wBox.style.borderLeftColor = bbColor;
+                                } else {
+                                    tmSpeed.style.display = 'none';
+                                    document.getElementById('res-bb-warning').style.display = 'none';
+                                }
+                                
+                                // Re-enable sub-tabs to default state
+                                document.getElementById('res-view-overview').style.display = 'block';
+                                document.getElementById('res-view-dns').style.display = 'none';
+                                document.getElementById('res-view-trace').style.display = 'none';
+                                resTabs.forEach(t => t.classList.remove('active'));
+                                document.querySelector('.res-tab[data-tab="overview"]').classList.add('active');
+                                
+                                // Setup DNS 
+                                if(parsed.DnsResults) {
+                                    const dCont = document.getElementById('dns-table-container');
+                                    dCont.innerHTML = "";
+                                    
+                                    let bestTime = 999;
+                                    parsed.DnsResults.forEach(r => { if(r.AvgTimeMs < bestTime) bestTime = r.AvgTimeMs; });
+                                    
+                                    parsed.DnsResults.forEach(r => {
+                                        const isBest = (r.AvgTimeMs === bestTime && r.AvgTimeMs < 999);
+                                        const col = isBest ? '#00e676' : (r.Name === "System" ? '#aaa' : '#fff');
+                                        const bg = isBest ? 'rgba(0, 230, 118, 0.05)' : 'rgba(20,20,20,0.5)';
+                                        const timeStr = r.AvgTimeMs === 999 ? "FAILED" : `${r.AvgTimeMs} ms`;
+                                        
+                                        dCont.innerHTML += `
+                                        <div style="display:flex; justify-content:space-between; padding: 12px 20px; background: ${bg}; border: 1px solid #333; border-left: 2px solid ${col};">
+                                            <div style="color: #ccc; width: 120px;">${r.Name}</div>
+                                            <div style="color: #666; font-size: 11px; font-family: monospace; flex: 1; margin-top:2px;">${r.IP}</div>
+                                            <div style="color: ${col}; font-weight: bold; width: 80px; text-align:right;">${timeStr}</div>
+                                        </div>`;
+                                    });
+                                    document.getElementById('dns-summary-text').innerText = parsed.DnsSummary || "";
+                                }
+                                
+                                // Setup Traceroute
+                                if (parsed.TracerouteRaw && parsed.TracerouteRaw === "Skipped") {
+                                    document.getElementById('tab-btn-trace').style.display = 'none';
+                                } else {
+                                    document.getElementById('tab-btn-trace').style.display = 'block';
+                                    document.getElementById('trace-out').innerText = parsed.TracerouteRaw || "Traceroute Data Unavailable";
+                                }
+
+                            }, 800); // Sanfte Überleitung
+                        }
+                    } catch (e) {
+                        // Ignorieren von unsauberem JSON in Zwischenzeug
+                    }
+                }
+            });
+
+            activeProcess.on('close', () => {
+                activeProcess = null;
+                if (isTesting) {
+                    // Fallback, falls Script crasht bevor es "Result" sendet
+                    isTesting = false;
+                    navItems.forEach(n => n.classList.remove('disabled-tab'));
+                    btnStart.disabled = false;
+                    loadStatus.innerText = "API ERROR";
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

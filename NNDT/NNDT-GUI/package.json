@@ -1,0 +1,48 @@
+{
+  "name": "sndt",
+  "productName": "SNDT v1.1.5 - Global Release Edition",
+  "version": "1.1.0",
+  "description": "Sinn Network Diagnostics Tool",
+  "main": "main.js",
+  "author": "Sinn",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --x64"
+  },
+  "devDependencies": {
+    "@electron/packager": "^19.1.0",
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.sinn.sndt",
+    "productName": "SNDT v1.1.5 - Global Release Edition",
+    "win": {
+      "target": "portable",
+      "icon": "C:\\Users\\nilss\\Desktop\\sndt_logo2.ico",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "portable": {
+      "artifactName": "SNDT v1.1.5 -Global Release Edition.exe"
+    },
+    "files": [
+      "**/*",
+      "!node_modules/electron-builder/**",
+      "!node_modules/.cache/**"
+    ],
+    "extraResources": [
+      {
+        "from": "../Engine",
+        "to": "Engine",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../sndt_logo.svg",
+        "to": "sndt_logo.svg"
+      }
+    ],
+    "asar": true
+  }
+}

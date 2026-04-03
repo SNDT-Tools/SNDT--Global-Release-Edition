@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+    <defs>
+        <!-- Extreme orange glow filter for Phase 3 Data Stress -->
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="20" result="blur1" />
+            <feGaussianBlur in="SourceGraphic" stdDeviation="40" result="blur2" />
+            <feGaussianBlur in="SourceGraphic" stdDeviation="70" result="blur3" />
+            <feMerge>
+                <feMergeNode in="blur3" />
+                <feMergeNode in="blur2" />
+                <feMergeNode in="blur1" />
+                <feMergeNode in="SourceGraphic" />
+            </feMerge>
+        </filter>
+        
+        <!-- White-hot core glow filter -->
+        <filter id="core-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur" />
+            <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+            </feMerge>
+        </filter>
+    </defs>
+
+    <!-- 
+      Transparent background. 
+      Place this over a dark (#111111) UI for best results. 
+    -->
+    
+    <g transform="translate(256, 256)">
+        
+        <!-- Outer Ring (Phase 3 Double border) -->
+        <circle r="206" fill="none" stroke="#ff4b00" stroke-width="4" opacity="0.9" />
+        <circle r="216" fill="none" stroke="#ff4b00" stroke-width="6" opacity="0.9" />
+        
+        <!-- Active "Energy Nodes" or high-frequency pulses on the ring -->
+        <circle r="206" fill="none" stroke="#ffffff" stroke-width="4" stroke-dasharray="2 600" stroke-linecap="round" opacity="1.0" transform="rotate(35)" />
+        <circle r="216" fill="none" stroke="#ffffff" stroke-width="6" stroke-dasharray="2 600" stroke-linecap="round" opacity="1.0" transform="rotate(160)" />
+
+        <!-- Phase 3 Overdrive Blob - The base plasma volume -->
+        <path d="M 0 -130 C 70 -120, 130 -60, 120 0 C 110 70, 60 120, 0 115 C -60 110, -120 60, -115 0 C -110 -60, -70 -130, 0 -130 Z" 
+              fill="#ff4b00" filter="url(#glow)" opacity="0.9" transform="rotate(25)" />
+              
+        <!-- Inner White-Hot Plasma Core causing the stress glow -->
+        <path d="M 0 -100 C 50 -90, 100 -50, 95 0 C 90 50, 50 100, 0 95 C -50 90, -100 50, -95 0 C -90 -50, -50 -100, 0 -100 Z" 
+              fill="#ffc896" filter="url(#core-glow)" transform="rotate(-15)" />
+              
+        <!-- Absolute Core Center (Titanium White) -->
+        <circle r="60" fill="#ffffff" filter="url(#core-glow)" />
+
+    </g>
+</svg>
