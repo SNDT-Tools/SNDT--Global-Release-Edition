@@ -16,9 +16,9 @@ Features: Hardware-Vault, Dual-Stack Check, and ISP Diagnostics.
 
 #
 
-> 🚀 **SNEAK PEEK:** Work on the **SNDT GUI-Edition** is in full swing! A release with a complete Graphical User Interface is just around the corner. Stay tuned!
+### 🔮 Sneak Peek: What's coming in v1.1.5?
 
-
+* 👁️ **Streamer Mode (Privacy Toggle):** We are currently working on a dedicated "Eye" icon right next to your IP addresses. With a single click, you will be able to **toggle your public IP visibility on or off** (censoring it instantly). This will make it **100% safe to share screenshots or live streams** of your dashboard with the world without leaking your private data!
 
 
 
